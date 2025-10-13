@@ -14,7 +14,7 @@ var (
 // Load initializes configuration by reading from a .env file and environment variables, setting relevant global variables.
 func Load() {
 	// Specify the .env file
-	viper.SetConfigFile(".env")
+	viper.SetConfigFile("../.env")
 
 	// Read the configuration file
 	err := viper.ReadInConfig()
