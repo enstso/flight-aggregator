@@ -20,7 +20,7 @@ func HealthHandler(w http.ResponseWriter, _ *http.Request) {
 
 	// Check SERVER1
 	if !checkServer(client, config.SERVER1_URL) {
-		err := json.NewEncoder(w).Encode(HealthNOk())
+		err := json.NewEncoder(w).Encode(NOk())
 		if err != nil {
 			return
 		}
@@ -29,7 +29,7 @@ func HealthHandler(w http.ResponseWriter, _ *http.Request) {
 
 	// Check SERVER2
 	if !checkServer(client, config.SERVER2_URL) {
-		err := json.NewEncoder(w).Encode(HealthNOk())
+		err := json.NewEncoder(w).Encode(NOk())
 		if err != nil {
 			return
 		}
@@ -37,7 +37,7 @@ func HealthHandler(w http.ResponseWriter, _ *http.Request) {
 	}
 
 	// If we reach here, both servers are OK
-	err := json.NewEncoder(w).Encode(HealthOk())
+	err := json.NewEncoder(w).Encode(Ok())
 	if err != nil {
 		return
 	}
