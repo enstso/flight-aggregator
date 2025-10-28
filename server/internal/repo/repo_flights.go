@@ -2,6 +2,7 @@ package repo
 
 import (
 	"aggregator/internal/domain"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -12,6 +13,27 @@ type RepoFlights struct {
 	data domain.Flights
 }
 
+func (r *RepoFlights) FindByNumber(ctx context.Context, number string) (domain.Flight, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (r *RepoFlights) FindByPassenger(ctx context.Context, firstName, lastName string) (domain.Flights, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (r *RepoFlights) FindByDestination(ctx context.Context, departure, arrival string) (domain.Flights, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (r *RepoFlights) FindByPrice(ctx context.Context, price float64) (domain.Flights, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+// NewRepoFlightsFromReader parses flight data from an io.Reader and returns a RepoFlights instance or an error.
 func NewRepoFlightsFromReader(r io.Reader) (*RepoFlights, error) {
 	var raw struct {
 		Flights []struct {
@@ -27,9 +49,12 @@ func NewRepoFlightsFromReader(r io.Reader) (*RepoFlights, error) {
 			Currency         string  `json:"currency"`
 		} `json:"flights"`
 	}
-	if err := json.NewDecoder(r).Decode(&raw); err != nil {
-		return nil, fmt.Errorf("repoA decode: %w", err)
+
+	err := json.NewDecoder(r).Decode(&raw.Flights)
+	if err != nil {
+		return nil, err
 	}
+
 	const layout = time.RFC3339
 	out := make(domain.Flights, 0, len(raw.Flights))
 
@@ -67,4 +92,9 @@ func NewRepoFlightsFromReader(r io.Reader) (*RepoFlights, error) {
 		out = append(out, *flight)
 	}
 	return &RepoFlights{out}, nil
+}
+
+// List retrieves all flights currently stored in the repository as a domain.Flights collection.
+func (r *RepoFlights) List(ctx context.Context) (domain.Flights, error) {
+	return append(domain.Flights(nil), r.data...), nil
 }
