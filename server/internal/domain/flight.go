@@ -47,6 +47,7 @@ type Flights []Flight
 
 // FlightsRepository defines methods to interact with flight data and perform various queries.
 // List retrieves all flights.
+// FindById retrieves a flight by its unique ID from the repository.
 // FindByNumber retrieves a flight by its flight number.
 // FindByPassenger retrieves flights based on a passenger's first and last name.
 // FindByDestination retrieves flights from a departure location to an arrival location.
@@ -55,6 +56,9 @@ type FlightsRepository interface {
 
 	// List retrieves all available flights from the repository and returns them as a collection.
 	List(ctx context.Context) (Flights, error)
+
+	// FindById retrieves a flight by its unique ID from the repository.
+	FindById(ctx context.Context, id string) (Flight, error)
 
 	// FindByNumber retrieves a specific flight from the repository based on the provided flight number.
 	FindByNumber(ctx context.Context, number string) (Flight, error)

@@ -14,26 +14,6 @@ type RepoFlightToBook struct {
 	data domain.Flights
 }
 
-func (r *RepoFlightToBook) FindByNumber(ctx context.Context, number string) (domain.Flight, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (r *RepoFlightToBook) FindByPassenger(ctx context.Context, firstName, lastName string) (domain.Flights, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (r *RepoFlightToBook) FindByDestination(ctx context.Context, departure, arrival string) (domain.Flights, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (r *RepoFlightToBook) FindByPrice(ctx context.Context, price float64) (domain.Flights, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
 // NewRepoFlightToBookFromReader creates a RepoFlightToBook by reading and decoding flight data from the provided io.Reader.
 func NewRepoFlightToBookFromReader(r io.Reader) (*RepoFlightToBook, error) {
 	var raw struct {
@@ -109,4 +89,39 @@ func NewRepoFlightToBookFromReader(r io.Reader) (*RepoFlightToBook, error) {
 // List retrieves all available flights stored in the repository. It returns a slice of flights or an error if any occurs.
 func (r *RepoFlightToBook) List(ctx context.Context) (domain.Flights, error) {
 	return append(domain.Flights(nil), r.data...), nil
+}
+
+func (r *RepoFlightToBook) FindByNumber(ctx context.Context, number string) (domain.Flight, error) {
+	for _, f := range r.data {
+		for _, s := range f.Segments {
+			if strings.Compare(s.FlightNumber, number) == 0 {
+				return f, nil
+			}
+		}
+	}
+	return domain.Flight{}, nil
+}
+
+func (r *RepoFlightToBook) FindById(ctx context.Context, id string) (domain.Flight, error) {
+	for _, f := range r.data {
+		if strings.Compare(f.ID, id) == 0 {
+			return f, nil
+		}
+	}
+	return domain.Flight{}, nil
+}
+
+func (r *RepoFlightToBook) FindByPassenger(ctx context.Context, firstName, lastName string) (domain.Flights, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (r *RepoFlightToBook) FindByDestination(ctx context.Context, departure, arrival string) (domain.Flights, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (r *RepoFlightToBook) FindByPrice(ctx context.Context, price float64) (domain.Flights, error) {
+	//TODO implement me
+	panic("implement me")
 }
