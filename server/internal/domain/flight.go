@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"errors"
 	"time"
 )
 
@@ -47,6 +48,7 @@ type Flights []Flight
 
 // FlightsRepository defines methods to interact with flight data and perform various queries.
 // List retrieves all flights.
+// FindById retrieves a flight by its unique ID from the repository.
 // FindByNumber retrieves a flight by its flight number.
 // FindByPassenger retrieves flights based on a passenger's first and last name.
 // FindByDestination retrieves flights from a departure location to an arrival location.
@@ -56,11 +58,14 @@ type FlightsRepository interface {
 	// List retrieves all available flights from the repository and returns them as a collection.
 	List(ctx context.Context) (Flights, error)
 
+	// FindById retrieves a flight by its unique ID from the repository.
+	FindById(ctx context.Context, id string) (Flight, error)
+
 	// FindByNumber retrieves a specific flight from the repository based on the provided flight number.
 	FindByNumber(ctx context.Context, number string) (Flight, error)
 
-	// FindByPassenger retrieves flights associated with a specific passenger's first and last name from the repository.
-	FindByPassenger(ctx context.Context, firstName, lastName string) (Flights, error)
+	// FindByPassenger retrieves flights associated with a specific passenger's first and last name (passengerName) from the repository.
+	FindByPassenger(ctx context.Context, passengerName string) (Flights, error)
 
 	// FindByDestination retrieves flights that match the specified departure and arrival locations from the repository.
 	FindByDestination(ctx context.Context, departure, arrival string) (Flights, error)
@@ -68,3 +73,5 @@ type FlightsRepository interface {
 	// FindByPrice retrieves flights from the repository that match the specified price.
 	FindByPrice(ctx context.Context, price float64) (Flights, error)
 }
+
+var ErrFlightNotFound = errors.New("flight not found")
