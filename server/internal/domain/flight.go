@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"errors"
 	"time"
 )
 
@@ -63,8 +64,8 @@ type FlightsRepository interface {
 	// FindByNumber retrieves a specific flight from the repository based on the provided flight number.
 	FindByNumber(ctx context.Context, number string) (Flight, error)
 
-	// FindByPassenger retrieves flights associated with a specific passenger's first and last name from the repository.
-	FindByPassenger(ctx context.Context, firstName, lastName string) (Flights, error)
+	// FindByPassenger retrieves flights associated with a specific passenger's first and last name (passengerName) from the repository.
+	FindByPassenger(ctx context.Context, passengerName string) (Flights, error)
 
 	// FindByDestination retrieves flights that match the specified departure and arrival locations from the repository.
 	FindByDestination(ctx context.Context, departure, arrival string) (Flights, error)
@@ -72,3 +73,5 @@ type FlightsRepository interface {
 	// FindByPrice retrieves flights from the repository that match the specified price.
 	FindByPrice(ctx context.Context, price float64) (Flights, error)
 }
+
+var ErrFlightNotFound = errors.New("flight not found")

@@ -3,6 +3,7 @@ package repo
 import (
 	"aggregator/internal/domain"
 	"context"
+	"errors"
 )
 
 type Multi struct {
@@ -24,4 +25,66 @@ func (m *Multi) List(ctx context.Context) ([]domain.Flight, error) {
 		all = append(all, items...)
 	}
 	return all, nil
+}
+
+func (m *Multi) FindByID(ctx context.Context, id string) (domain.Flight, error) {
+	var lastErr error
+	for _, r := range m.repos {
+		f, err := r.FindById(ctx, id)
+		if err != nil {
+			if errors.Is(err, domain.ErrFlightNotFound) {
+				lastErr = err
+				continue
+			}
+			return domain.Flight{}, err
+		}
+		if f.ID == "" {
+			lastErr = domain.ErrFlightNotFound
+			continue
+		}
+		return f, nil
+	}
+	if lastErr == nil {
+		lastErr = domain.ErrFlightNotFound
+	}
+	return domain.Flight{}, lastErr
+}
+
+func (m *Multi) FindByNumber(ctx context.Context, id string) (domain.Flight, error) {
+	var lastErr error
+	for _, r := range m.repos {
+		f, err := r.FindByNumber(ctx, id)
+		if err != nil {
+			if errors.Is(err, domain.ErrFlightNotFound) {
+				lastErr = err
+				continue
+			}
+			return domain.Flight{}, err
+		}
+		if f.ID == "" {
+			lastErr = domain.ErrFlightNotFound
+			continue
+		}
+		return f, nil
+	}
+	if lastErr == nil {
+		lastErr = domain.ErrFlightNotFound
+	}
+	return domain.Flight{}, lastErr
+}
+
+func (m *Multi) FindByPassenger(ctx context.Context, passengerName string) ([]domain.Flight, error) {
+	//TODO Not implemented
+	panic("Not implemented")
+}
+
+func (m *Multi) FindByDestination(ctx context.Context, departure, arrival string) ([]domain.Flight, error) {
+	//TODO Not implemented
+
+	panic("Not implemented")
+}
+
+func (m *Multi) FindByPrice(ctx context.Context, price float64) ([]domain.Flight, error) {
+	//TODO Not implemented
+	panic("Not implemented")
 }

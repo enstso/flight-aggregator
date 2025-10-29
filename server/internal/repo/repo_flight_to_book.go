@@ -111,17 +111,35 @@ func (r *RepoFlightToBook) FindById(ctx context.Context, id string) (domain.Flig
 	return domain.Flight{}, nil
 }
 
-func (r *RepoFlightToBook) FindByPassenger(ctx context.Context, firstName, lastName string) (domain.Flights, error) {
-	//TODO implement me
-	panic("implement me")
+func (r *RepoFlightToBook) FindByPassenger(ctx context.Context, passengerName string) (domain.Flights, error) {
+	var flights []domain.Flight
+	for _, f := range r.data {
+		if strings.Compare(f.PassengerName, passengerName) == 0 {
+			flights = append(flights, f)
+		}
+	}
+	return flights, nil
 }
 
 func (r *RepoFlightToBook) FindByDestination(ctx context.Context, departure, arrival string) (domain.Flights, error) {
-	//TODO implement me
-	panic("implement me")
+	var flights []domain.Flight
+	for _, f := range r.data {
+		for _, seg := range f.Segments {
+			if strings.Compare(seg.Departure, departure) == 0 &&
+				strings.Compare(seg.Arrival, arrival) == 0 {
+				flights = append(flights, f)
+			}
+		}
+	}
+	return flights, nil
 }
 
 func (r *RepoFlightToBook) FindByPrice(ctx context.Context, price float64) (domain.Flights, error) {
-	//TODO implement me
-	panic("implement me")
+	var flights []domain.Flight
+	for _, f := range r.data {
+		if f.Total.Amount == price {
+			flights = append(flights, f)
+		}
+	}
+	return flights, nil
 }
