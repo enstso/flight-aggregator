@@ -19,6 +19,9 @@ func main() {
 	http.HandleFunc("/flights", handler.GetFlights)
 	http.HandleFunc("/flights/id/", handler.GetFlightById)
 	http.HandleFunc("/flights/number/", handler.GetFlightByNumber)
+	http.HandleFunc("/flights/passengerName/", handler.GetFlightsByPassenger)
+	http.HandleFunc("/flights/destination", handler.GetFlightsByDestination)
+	http.HandleFunc(" /flights/price/", handler.GetFlightsByPrice)
 
 	fmt.Println("Server running on :8080")
 	fmt.Println(http.ListenAndServe(":8080", nil))

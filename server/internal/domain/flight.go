@@ -75,3 +75,4 @@ type FlightsRepository interface {
 }
 
 var ErrFlightNotFound = errors.New("flight not found")
+var ErrFlightsNotFound = errors.New("flights not found")

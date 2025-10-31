@@ -7,14 +7,22 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
 
+var errNotAllowed = errors.New("method not allowed")
+
 // GetFlights
 func GetFlights(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, errNotAllowed.Error(), http.StatusMethodNotAllowed)
+		return
+	}
 	ctx := r.Context()
 	w.Header().Set("Content-Type", "application/json")
 
@@ -35,8 +43,14 @@ func GetFlights(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetFlightById(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, errNotAllowed.Error(), http.StatusMethodNotAllowed)
+		return
+	}
+
 	var ctx = r.Context()
 	w.Header().Set("Content-Type", "application/json")
+
 	var parts = strings.Split(r.URL.Path, "/")
 	if len(parts) < 4 {
 		http.Error(w, "ID is not provided", http.StatusBadRequest)
@@ -60,11 +74,17 @@ func GetFlightById(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetFlightByNumber(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, errNotAllowed.Error(), http.StatusMethodNotAllowed)
+		return
+	}
+
 	var ctx = r.Context()
 	w.Header().Set("Content-Type", "application/json")
+
 	var parts = strings.Split(r.URL.Path, "/")
 	if len(parts) < 4 {
-		http.Error(w, "Number flights is not provided", http.StatusBadRequest)
+		http.Error(w, "Number flight is not provided", http.StatusBadRequest)
 		return
 	}
 
@@ -79,6 +99,106 @@ func GetFlightByNumber(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(flight); err != nil {
+		http.Error(w, "encode response: "+err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func GetFlightsByPassenger(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, errNotAllowed.Error(), http.StatusMethodNotAllowed)
+		return
+	}
+
+	var ctx = r.Context()
+	w.Header().Set("Content-Type", "application/json")
+
+	var parts = strings.Split(r.URL.Path, "/")
+	if len(parts) < 4 {
+		http.Error(w, "PassengerName is not provided", http.StatusBadRequest)
+		return
+	}
+
+	var passengerName = parts[3]
+	fmt.Println("[GET] /flights/passengerName/", passengerName, time.Now().Format("2006-01-02 15:04:05"))
+
+	multi := GetMultiRepo(ctx, w)
+	var flights, err = multi.FindByPassenger(ctx, passengerName)
+	if err != nil {
+		http.Error(w, "flights/passengerName/:passengerName: "+err.Error(), http.StatusNotFound)
+	}
+
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(flights); err != nil {
+		http.Error(w, "encode response: "+err.Error(), http.StatusInternalServerError)
+	}
+}
+func GetFlightsByDestination(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, errNotAllowed.Error(), http.StatusMethodNotAllowed)
+		return
+	}
+
+	var ctx = r.Context()
+	w.Header().Set("Content-Type", "application/json")
+
+	fmt.Println("[GET] /flights/destination", time.Now().Format("2006-01-02 15:04:05"))
+	r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
+
+	dec := json.NewDecoder(r.Body)
+	dec.DisallowUnknownFields()
+
+	var req FlightDestinationRequest
+	if err := dec.Decode(&req); err != nil {
+		http.Error(w, "invalid JSON: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+	// ensure there's no extra JSON after the object
+	if dec.More() {
+		http.Error(w, "invalid JSON: multiple JSON values", http.StatusBadRequest)
+		return
+	}
+
+	multi := GetMultiRepo(ctx, w)
+
+	var flights, err = multi.FindByDestination(ctx, req.Departure, req.Arrival)
+	if err != nil {
+		http.Error(w, "flights/destination "+err.Error(), http.StatusNotFound)
+	}
+
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(flights); err != nil {
+		http.Error(w, "encode response: "+err.Error(), http.StatusInternalServerError)
+	}
+}
+func GetFlightsByPrice(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, errNotAllowed.Error(), http.StatusMethodNotAllowed)
+		return
+	}
+
+	var ctx = r.Context()
+	w.Header().Set("Content-Type", "application/json")
+
+	var parts = strings.Split(r.URL.Path, "/")
+	if len(parts) < 4 {
+		http.Error(w, "PassengerName is not provided", http.StatusBadRequest)
+		return
+	}
+
+	var priceStr = parts[3]
+	fmt.Println("[GET] /flights/price/", priceStr, time.Now().Format("2006-01-02 15:04:05"))
+
+	var price, _ = strconv.ParseFloat(priceStr, 64)
+
+	multi := GetMultiRepo(ctx, w)
+
+	var flights, err = multi.FindByPrice(ctx, price)
+	if err != nil {
+		http.Error(w, "flights/price/:price: "+err.Error(), http.StatusNotFound)
+	}
+
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(flights); err != nil {
 		http.Error(w, "encode response: "+err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -108,4 +228,9 @@ func GetMultiRepo(ctx context.Context, w http.ResponseWriter) *repo.Multi {
 	}
 
 	return repo.NewMulti(rA, rB)
+}
+
+type FlightDestinationRequest struct {
+	Departure string `json:"departure"`
+	Arrival   string `json:"arrival"`
 }
