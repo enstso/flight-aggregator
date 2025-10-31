@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -64,7 +65,7 @@ func GetFlightByNumber(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var parts = strings.Split(r.URL.Path, "/")
 	if len(parts) < 4 {
-		http.Error(w, "Number flights is not provided", http.StatusBadRequest)
+		http.Error(w, "Number flight is not provided", http.StatusBadRequest)
 		return
 	}
 
@@ -75,6 +76,55 @@ func GetFlightByNumber(w http.ResponseWriter, r *http.Request) {
 	var flight, err = multi.FindByNumber(ctx, number)
 	if err != nil {
 		http.Error(w, "flights/number/:number: "+err.Error(), http.StatusNotFound)
+	}
+
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(flight); err != nil {
+		http.Error(w, "encode response: "+err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func GetFlightsByPassenger(w http.ResponseWriter, r *http.Request) {
+	var ctx = r.Context()
+	w.Header().Set("Content-Type", "application/json")
+	var parts = strings.Split(r.URL.Path, "/")
+	if len(parts) < 4 {
+		http.Error(w, "PassengerName is not provided", http.StatusBadRequest)
+		return
+	}
+
+	var passengerName = parts[3]
+	fmt.Println("[GET] /flights/passengerName/", passengerName, time.Now().Format("2006-01-02 15:04:05"))
+
+	multi := GetMultiRepo(ctx, w)
+	var flight, err = multi.FindByPassenger(ctx, passengerName)
+	if err != nil {
+		http.Error(w, "flights/passengerName/:passengerName: "+err.Error(), http.StatusNotFound)
+	}
+
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(flight); err != nil {
+		http.Error(w, "encode response: "+err.Error(), http.StatusInternalServerError)
+	}
+}
+func GetFlightsByPrice(w http.ResponseWriter, r *http.Request) {
+	var ctx = r.Context()
+	w.Header().Set("Content-Type", "application/json")
+	var parts = strings.Split(r.URL.Path, "/")
+	if len(parts) < 4 {
+		http.Error(w, "PassengerName is not provided", http.StatusBadRequest)
+		return
+	}
+
+	var priceStr = parts[3]
+	fmt.Println("[GET] /flights/price/", priceStr, time.Now().Format("2006-01-02 15:04:05"))
+
+	var price, _ = strconv.ParseFloat(priceStr, 64)
+
+	multi := GetMultiRepo(ctx, w)
+	var flight, err = multi.FindByPrice(ctx, price)
+	if err != nil {
+		http.Error(w, "flights/price/:price: "+err.Error(), http.StatusNotFound)
 	}
 
 	w.WriteHeader(http.StatusOK)
