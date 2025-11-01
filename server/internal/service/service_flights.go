@@ -28,8 +28,8 @@ func SortByTimeTravel(ctx context.Context, r *repo.Multi) (domain.Flights, error
 	}
 
 	sort.Slice(flights, func(i, j int) bool {
-		durationI := totalTravelTime(flights[i])
-		durationJ := totalTravelTime(flights[j])
+		durationI := TotalTravelTime(flights[i])
+		durationJ := TotalTravelTime(flights[j])
 		return durationI < durationJ
 	})
 	return flights, nil
@@ -51,7 +51,7 @@ func SortByDepartureDate(ctx context.Context, r *repo.Multi) (domain.Flights, er
 	return flights, nil
 }
 
-func totalTravelTime(f domain.Flight) time.Duration {
+func TotalTravelTime(f domain.Flight) time.Duration {
 	if len(f.Segments) == 0 {
 		return 0
 	}
