@@ -71,7 +71,8 @@ func NewRepoFlightToBookFromReader(r io.Reader) (*RepoFlightToBook, error) {
 			Amount:   f.Total.Amount,
 			Currency: f.Total.Currency,
 		}
-		passenger := strings.TrimSpace(f.Traveler.FirstName + f.Traveler.LastName)
+
+		passenger := f.Traveler.FirstName + " " + f.Traveler.LastName
 
 		flight := domain.NewFlight(
 			f.Reference,
@@ -112,7 +113,7 @@ func (r *RepoFlightToBook) FindById(ctx context.Context, id string) (domain.Flig
 }
 
 func (r *RepoFlightToBook) FindByPassenger(ctx context.Context, passengerName string) (domain.Flights, error) {
-	var flights []domain.Flight
+	var flights domain.Flights
 	for _, f := range r.data {
 		if strings.Compare(f.PassengerName, passengerName) == 0 {
 			flights = append(flights, f)
@@ -122,7 +123,7 @@ func (r *RepoFlightToBook) FindByPassenger(ctx context.Context, passengerName st
 }
 
 func (r *RepoFlightToBook) FindByDestination(ctx context.Context, departure, arrival string) (domain.Flights, error) {
-	var flights []domain.Flight
+	var flights domain.Flights
 	for _, f := range r.data {
 		for _, seg := range f.Segments {
 			if strings.Compare(seg.Departure, departure) == 0 &&

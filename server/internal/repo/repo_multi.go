@@ -15,8 +15,8 @@ func NewMulti(repos ...domain.FlightsRepository) *Multi {
 }
 
 // List retrieves all flights from multiple repositories and returns them as a combined collection or an error.
-func (m *Multi) List(ctx context.Context) ([]domain.Flight, error) {
-	var all []domain.Flight
+func (m *Multi) List(ctx context.Context) (domain.Flights, error) {
+	var all domain.Flights
 	for _, r := range m.repos {
 		items, err := r.List(ctx)
 		if err != nil {
@@ -73,71 +73,61 @@ func (m *Multi) FindByNumber(ctx context.Context, id string) (domain.Flight, err
 	return domain.Flight{}, lastErr
 }
 
-func (m *Multi) FindByPassenger(ctx context.Context, passengerName string) ([]domain.Flight, error) {
-	var lastErr error
+func (m *Multi) FindByPassenger(ctx context.Context, passengerName string) (domain.Flights, error) {
+	var flights domain.Flights
+
 	for _, r := range m.repos {
 		f, err := r.FindByPassenger(ctx, passengerName)
 		if err != nil {
 			if errors.Is(err, domain.ErrFlightNotFound) {
-				lastErr = err
 				continue
 			}
 			return domain.Flights{}, err
 		}
-		if len(f) == 0 {
-			lastErr = domain.ErrFlightsNotFound
-			continue
-		}
-		return f, nil
+		flights = append(flights, f...)
 	}
-	if lastErr == nil {
-		lastErr = domain.ErrFlightsNotFound
+	if len(flights) == 0 {
+		return nil, domain.ErrFlightsNotFound
 	}
-	return domain.Flights{}, lastErr
+	return flights, nil
 }
 
-func (m *Multi) FindByDestination(ctx context.Context, departure, arrival string) ([]domain.Flight, error) {
-	var lastErr error
+func (m *Multi) FindByDestination(ctx context.Context, departure, arrival string) (domain.Flights, error) {
+	var flights domain.Flights
+
 	for _, r := range m.repos {
 		f, err := r.FindByDestination(ctx, departure, arrival)
 		if err != nil {
 			if errors.Is(err, domain.ErrFlightNotFound) {
-				lastErr = err
 				continue
 			}
 			return domain.Flights{}, err
 		}
-		if len(f) == 0 {
-			lastErr = domain.ErrFlightsNotFound
-			continue
-		}
-		return f, nil
+		flights = append(flights, f...)
 	}
-	if lastErr == nil {
-		lastErr = domain.ErrFlightsNotFound
+	if len(flights) == 0 {
+		return nil, domain.ErrFlightsNotFound
+
 	}
-	return domain.Flights{}, lastErr
+	return flights, nil
 }
 
-func (m *Multi) FindByPrice(ctx context.Context, price float64) ([]domain.Flight, error) {
-	var lastErr error
+func (m *Multi) FindByPrice(ctx context.Context, price float64) (domain.Flights, error) {
+	var flights domain.Flights
+
 	for _, r := range m.repos {
 		f, err := r.FindByPrice(ctx, price)
 		if err != nil {
 			if errors.Is(err, domain.ErrFlightNotFound) {
-				lastErr = err
 				continue
 			}
 			return domain.Flights{}, err
 		}
-		if len(f) == 0 {
-			lastErr = domain.ErrFlightsNotFound
-			continue
-		}
-		return f, nil
+		flights = append(flights, f...)
 	}
-	if lastErr == nil {
-		lastErr = domain.ErrFlightsNotFound
+	if len(flights) == 0 {
+		return nil, domain.ErrFlightsNotFound
+
 	}
-	return domain.Flights{}, lastErr
+	return flights, nil
 }

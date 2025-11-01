@@ -3,7 +3,9 @@ package handler
 import (
 	"aggregator/internal/config"
 	"aggregator/internal/db"
+	"aggregator/internal/domain"
 	"aggregator/internal/repo"
+	"aggregator/internal/service"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -17,7 +19,6 @@ import (
 
 var errNotAllowed = errors.New("method not allowed")
 
-// GetFlights
 func GetFlights(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, errNotAllowed.Error(), http.StatusMethodNotAllowed)
@@ -65,6 +66,7 @@ func GetFlightById(w http.ResponseWriter, r *http.Request) {
 	var flight, err = multi.FindByID(ctx, id)
 	if err != nil {
 		http.Error(w, "flights/id/:id: "+err.Error(), http.StatusNotFound)
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -95,6 +97,7 @@ func GetFlightByNumber(w http.ResponseWriter, r *http.Request) {
 	var flight, err = multi.FindByNumber(ctx, number)
 	if err != nil {
 		http.Error(w, "flights/number/:number: "+err.Error(), http.StatusNotFound)
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -125,6 +128,7 @@ func GetFlightsByPassenger(w http.ResponseWriter, r *http.Request) {
 	var flights, err = multi.FindByPassenger(ctx, passengerName)
 	if err != nil {
 		http.Error(w, "flights/passengerName/:passengerName: "+err.Error(), http.StatusNotFound)
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -163,6 +167,7 @@ func GetFlightsByDestination(w http.ResponseWriter, r *http.Request) {
 	var flights, err = multi.FindByDestination(ctx, req.Departure, req.Arrival)
 	if err != nil {
 		http.Error(w, "flights/destination "+err.Error(), http.StatusNotFound)
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -195,8 +200,58 @@ func GetFlightsByPrice(w http.ResponseWriter, r *http.Request) {
 	var flights, err = multi.FindByPrice(ctx, price)
 	if err != nil {
 		http.Error(w, "flights/price/:price: "+err.Error(), http.StatusNotFound)
+		return
 	}
 
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(flights); err != nil {
+		http.Error(w, "encode response: "+err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func GetFlightsSorted(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, errNotAllowed.Error(), http.StatusMethodNotAllowed)
+		return
+	}
+
+	ctx := r.Context()
+	w.Header().Set("Content-Type", "application/json")
+
+	sortType := strings.ToLower(r.URL.Query().Get("type"))
+
+	if sortType == "" {
+		http.Error(w, "missing query param: type", http.StatusBadRequest)
+		return
+	}
+
+	fmt.Println("[GET] /flights/sorted type=",
+		sortType, time.Now().Format("2006-01-02 15:04:05"))
+
+	multi := GetMultiRepo(ctx, w)
+	if multi == nil {
+		return
+	}
+	var (
+		flights domain.Flights
+		err     error
+	)
+
+	switch sortType {
+	case "price":
+		flights, err = service.SortByPrice(ctx, multi)
+	case "time", "timetravel", "duration":
+		flights, err = service.SortByTimeTravel(ctx, multi)
+	case "departure", "depart", "departure_date":
+		flights, err = service.SortByDepartureDate(ctx, multi)
+	default:
+		http.Error(w, "invalid sort type: "+sortType, http.StatusBadRequest)
+		return
+	}
+	if err != nil {
+		http.Error(w, "sort flights: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(flights); err != nil {
 		http.Error(w, "encode response: "+err.Error(), http.StatusInternalServerError)
