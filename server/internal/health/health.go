@@ -7,6 +7,7 @@ type Health struct {
 	Message string
 }
 
+// NewHealth creates and returns a pointer to a Health instance with the provided status and message.
 func NewHealth(status int, message string) *Health {
 	return &Health{
 		Status:  status,

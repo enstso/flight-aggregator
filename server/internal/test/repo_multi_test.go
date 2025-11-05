@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// createTestFlights generates a set of test flight data with predefined attributes for testing purposes.
 func createTestFlights() domain.Flights {
 	now := time.Now()
 	return domain.Flights{
@@ -55,6 +56,8 @@ func createTestFlights() domain.Flights {
 	}
 }
 
+// TestMulti_List validates the behavior of the Multi repository's List function through various test scenarios.
+// It ensures proper aggregation of data from multiple repositories, error handling, and support for empty repositories.
 func TestMulti_List(t *testing.T) {
 	println("=====================REPO_UNIT_TEST====================")
 	ctx := context.Background()
@@ -119,6 +122,8 @@ func TestMulti_List(t *testing.T) {
 	})
 }
 
+// TestMulti_FindByID tests the behavior of the Multi repository's FindByID method across multiple repositories.
+// It verifies retrieving a flight by ID from different repositories, handles not found errors, and checks for repository errors.
 func TestMulti_FindByID(t *testing.T) {
 	ctx := context.Background()
 
@@ -195,6 +200,7 @@ func TestMulti_FindByID(t *testing.T) {
 	})
 }
 
+// TestMulti_FindByNumber tests the functionality of finding a flight by its flight number using a multi-repository implementation.
 func TestMulti_FindByNumber(t *testing.T) {
 	ctx := context.Background()
 
@@ -229,6 +235,7 @@ func TestMulti_FindByNumber(t *testing.T) {
 	})
 }
 
+// TestMulti_FindByPassenger tests the Multi repository's ability to find flights by passenger name across multiple repositories.
 func TestMulti_FindByPassenger(t *testing.T) {
 	ctx := context.Background()
 
@@ -288,6 +295,8 @@ func TestMulti_FindByPassenger(t *testing.T) {
 	})
 }
 
+// TestMulti_FindByDestination verifies the Multi repository functionality for finding flights by destination.
+// It checks whether flights are retrieved correctly or appropriate errors are returned when no flights are available.
 func TestMulti_FindByDestination(t *testing.T) {
 	ctx := context.Background()
 
@@ -328,6 +337,7 @@ func TestMulti_FindByDestination(t *testing.T) {
 	})
 }
 
+// TestMulti_FindByPrice tests the Multi repository's ability to find flights by price from multiple repositories.
 func TestMulti_FindByPrice(t *testing.T) {
 	ctx := context.Background()
 

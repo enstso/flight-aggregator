@@ -10,6 +10,7 @@ type Multi struct {
 	repos []domain.FlightsRepository
 }
 
+// NewMulti creates a new Multi instance with the provided list of FlightsRepository implementations.
 func NewMulti(repos ...domain.FlightsRepository) *Multi {
 	return &Multi{repos: repos}
 }
@@ -27,6 +28,7 @@ func (m *Multi) List(ctx context.Context) (domain.Flights, error) {
 	return all, nil
 }
 
+// FindByID searches for a flight by ID across multiple repositories and returns the flight or an error if not found.
 func (m *Multi) FindByID(ctx context.Context, id string) (domain.Flight, error) {
 	var lastErr error
 	for _, r := range m.repos {
@@ -50,6 +52,7 @@ func (m *Multi) FindByID(ctx context.Context, id string) (domain.Flight, error) 
 	return domain.Flight{}, lastErr
 }
 
+// FindByNumber searches for a flight by its number across multiple repositories and returns the flight or an error if not found.
 func (m *Multi) FindByNumber(ctx context.Context, id string) (domain.Flight, error) {
 	var lastErr error
 	for _, r := range m.repos {
@@ -73,6 +76,8 @@ func (m *Multi) FindByNumber(ctx context.Context, id string) (domain.Flight, err
 	return domain.Flight{}, lastErr
 }
 
+// FindByPassenger searches for flights associated with a specific passenger name across multiple repositories.
+// Returns a combined collection of flights or an error if none are found.
 func (m *Multi) FindByPassenger(ctx context.Context, passengerName string) (domain.Flights, error) {
 	var flights domain.Flights
 
@@ -92,6 +97,8 @@ func (m *Multi) FindByPassenger(ctx context.Context, passengerName string) (doma
 	return flights, nil
 }
 
+// FindByDestination searches for flights across multiple repositories based on the given departure and arrival locations.
+// It returns a combined collection of flights or an error if no matches are found in any repository.
 func (m *Multi) FindByDestination(ctx context.Context, departure, arrival string) (domain.Flights, error) {
 	var flights domain.Flights
 
@@ -107,11 +114,12 @@ func (m *Multi) FindByDestination(ctx context.Context, departure, arrival string
 	}
 	if len(flights) == 0 {
 		return nil, domain.ErrFlightsNotFound
-
 	}
 	return flights, nil
 }
 
+// FindByPrice retrieves flights matching the specified price across multiple repositories.
+// Returns a combined collection of flights or an error if none are found.
 func (m *Multi) FindByPrice(ctx context.Context, price float64) (domain.Flights, error) {
 	var flights domain.Flights
 
@@ -127,7 +135,6 @@ func (m *Multi) FindByPrice(ctx context.Context, price float64) (domain.Flights,
 	}
 	if len(flights) == 0 {
 		return nil, domain.ErrFlightsNotFound
-
 	}
 	return flights, nil
 }

@@ -8,10 +8,11 @@ import (
 	"net/http"
 )
 
-// Middleware CORS simple
+// withCORS is a middleware that enables CORS support for the provided HTTP handler.
+// Sets headers to allow cross-origin requests and handles preflight OPTIONS requests.
 func withCORS(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*") // ou "http://localhost:3000"
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
@@ -24,6 +25,7 @@ func withCORS(h http.Handler) http.Handler {
 	})
 }
 
+// main initializes the server, loads configuration, defines HTTP routes, and starts listening for incoming requests.
 func main() {
 	config.Load()
 
@@ -35,7 +37,7 @@ func main() {
 	mux.HandleFunc("/flights/number/", handler.GetFlightByNumber)
 	mux.HandleFunc("/flights/passengerName/", handler.GetFlightsByPassenger)
 	mux.HandleFunc("/flights/destination", handler.GetFlightsByDestination)
-	mux.HandleFunc("/flights/price/", handler.GetFlightsByPrice) // retiré l’espace
+	mux.HandleFunc("/flights/price/", handler.GetFlightsByPrice)
 	mux.HandleFunc("/flights/sorted", handler.GetFlightsSorted)
 
 	fmt.Println("Server running on :8080")
