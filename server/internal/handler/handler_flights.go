@@ -19,6 +19,8 @@ import (
 
 var errNotAllowed = errors.New("method not allowed")
 
+// GetFlights is an HTTP handler that retrieves and returns a list of flights in JSON format for GET requests.
+// Responds with an error if the method is not GET or if any issues occur during the processing.
 func GetFlights(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, errNotAllowed.Error(), http.StatusMethodNotAllowed)
@@ -43,6 +45,9 @@ func GetFlights(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetFlightById handles HTTP GET requests to retrieve a flight by its unique ID from the endpoints repository system.
+// It validates the HTTP method, processes the request context, and fetches flight data for a given ID.
+// Returns the flight details in JSON format or an appropriate HTTP error status in case of failure.
 func GetFlightById(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, errNotAllowed.Error(), http.StatusMethodNotAllowed)
@@ -75,6 +80,9 @@ func GetFlightById(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetFlightByNumber handles HTTP GET requests to retrieve flight details by its number from multiple repositories.
+// Returns flight details in JSON format or an appropriate HTTP error response if the flight is not found.
+// Expects the flight number as part of the URL path in the format "/flights/number/{flightNumber}".
 func GetFlightByNumber(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, errNotAllowed.Error(), http.StatusMethodNotAllowed)
@@ -106,6 +114,9 @@ func GetFlightByNumber(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetFlightsByPassenger handles retrieving flights based on a given passenger's name from multiple repositories.
+// It accepts only GET requests and expects the passenger's name in the URL path as the fourth segment.
+// Returns a JSON response with a list of flights or an error message in case of failure.
 func GetFlightsByPassenger(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, errNotAllowed.Error(), http.StatusMethodNotAllowed)
@@ -136,6 +147,12 @@ func GetFlightsByPassenger(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "encode response: "+err.Error(), http.StatusInternalServerError)
 	}
 }
+
+// GetFlightsByDestination handles GET requests to retrieve flights based on departure and arrival destinations.
+// It expects a JSON payload containing "departure" and "arrival" fields and returns matching flights in JSON format.
+// If the method is not GET, it responds with a "method not allowed" error.
+// The function limits the request body size to 1MB and ensures only valid JSON is processed.
+// It uses a multi-repository to search for flights and returns an error if no matches are found or on processing failures.
 func GetFlightsByDestination(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, errNotAllowed.Error(), http.StatusMethodNotAllowed)
@@ -175,6 +192,10 @@ func GetFlightsByDestination(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "encode response: "+err.Error(), http.StatusInternalServerError)
 	}
 }
+
+// GetFlightsByPrice handles HTTP GET requests to fetch flights filtered by a specified price.
+// It extracts the price from the URL path, queries multiple repositories, and returns matching flights in JSON format.
+// Responds with appropriate HTTP status codes for errors like bad requests, method not allowed, or data not found.
 func GetFlightsByPrice(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, errNotAllowed.Error(), http.StatusMethodNotAllowed)
@@ -209,6 +230,9 @@ func GetFlightsByPrice(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetFlightsSorted handles HTTP GET requests to return a list of flights sorted by a specified type (e.g., price, time).
+// It validates the method, parses the query parameter for sorting type, fetches flight data, and sorts accordingly.
+// Supported sorting types include "price", "time", and "departure". Responds with JSON on success or an error message on failure.
 func GetFlightsSorted(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, errNotAllowed.Error(), http.StatusMethodNotAllowed)
@@ -285,6 +309,7 @@ func GetMultiRepo(ctx context.Context, w http.ResponseWriter) *repo.Multi {
 	return repo.NewMulti(rA, rB)
 }
 
+// FlightDestinationRequest represents a request for searching flights based on departure and arrival locations.
 type FlightDestinationRequest struct {
 	Departure string `json:"departure"`
 	Arrival   string `json:"arrival"`

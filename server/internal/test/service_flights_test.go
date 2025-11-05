@@ -74,6 +74,7 @@ func createMockFlights() domain.Flights {
 	}
 }
 
+// createMockFlightsWithConnections generates mock flight data, including flights with multiple connections, for testing purposes.
 func createMockFlightsWithConnections() domain.Flights {
 	now := time.Now()
 	return domain.Flights{
@@ -125,6 +126,7 @@ func createMockFlightsWithConnections() domain.Flights {
 	}
 }
 
+// TestSortByPrice verifies the behavior of the SortByPrice function, ensuring flights are correctly sorted by price in ascending order.
 func TestSortByPrice(t *testing.T) {
 	println("=====================SERVICE_UNIT_TEST====================")
 
@@ -178,6 +180,8 @@ func TestSortByPrice(t *testing.T) {
 	})
 }
 
+// TestSortByTimeTravel validates the sorting of flights based on their total travel time in ascending order.
+// It includes tests for sorting accuracy, handling of errors, empty flight lists, and flights with connections.
 func TestSortByTimeTravel(t *testing.T) {
 	ctx := context.Background()
 
@@ -248,6 +252,7 @@ func TestSortByTimeTravel(t *testing.T) {
 	})
 }
 
+// TestSortByDepartureDate verifies the behavior of sorting flights by departure date of their segments in various scenarios.
 func TestSortByDepartureDate(t *testing.T) {
 	ctx := context.Background()
 
@@ -320,6 +325,7 @@ func TestSortByDepartureDate(t *testing.T) {
 	})
 }
 
+// TestTotalTravelTime tests the TotalTravelTime function to ensure correct calculation of total travel time for flights.
 func TestTotalTravelTime(t *testing.T) {
 	now := time.Now()
 

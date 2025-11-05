@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// SortByPrice retrieves a list of flights from repositories and sorts them in ascending order by their total price.
 func SortByPrice(ctx context.Context, r *repo.Multi) (domain.Flights, error) {
 	var sortFlights, err = r.List(ctx)
 	if err != nil {
@@ -21,6 +22,8 @@ func SortByPrice(ctx context.Context, r *repo.Multi) (domain.Flights, error) {
 	return sortFlights, nil
 }
 
+// SortByTimeTravel retrieves and sorts flights by their total travel time in ascending order.
+// Returns the sorted flights or an error if it fails to retrieve or sort the flights.
 func SortByTimeTravel(ctx context.Context, r *repo.Multi) (domain.Flights, error) {
 	flights, err := r.List(ctx)
 	if err != nil {
@@ -35,6 +38,8 @@ func SortByTimeTravel(ctx context.Context, r *repo.Multi) (domain.Flights, error
 	return flights, nil
 }
 
+// SortByDepartureDate retrieves flights and sorts them by the earliest departure date of their segments.
+// It returns the sorted list of flights or an error.
 func SortByDepartureDate(ctx context.Context, r *repo.Multi) (domain.Flights, error) {
 	flights, err := r.List(ctx)
 	if err != nil {
@@ -51,6 +56,8 @@ func SortByDepartureDate(ctx context.Context, r *repo.Multi) (domain.Flights, er
 	return flights, nil
 }
 
+// TotalTravelTime calculates the total travel time of a flight by measuring the time difference between the first departure and last arrival.
+// Returns zero if the flight has no segments.
 func TotalTravelTime(f domain.Flight) time.Duration {
 	if len(f.Segments) == 0 {
 		return 0

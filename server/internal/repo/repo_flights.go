@@ -77,10 +77,21 @@ func NewRepoFlightsFromReader(r io.Reader) (*RepoFlights, error) {
 
 // List retrieves all flights currently stored in the repository as a domain.Flights collection.
 func (r *RepoFlights) List(ctx context.Context) (domain.Flights, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+	}
 	return append(domain.Flights(nil), r.data...), nil
 }
 
+// FindById retrieves a flight by its unique identifier from the repository. Returns the flight or an empty object if not found.
 func (r *RepoFlights) FindById(ctx context.Context, id string) (domain.Flight, error) {
+	select {
+	case <-ctx.Done():
+		return domain.Flight{}, ctx.Err()
+	default:
+	}
 	for _, f := range r.data {
 		if strings.Compare(f.ID, id) == 0 {
 			return f, nil
@@ -89,7 +100,13 @@ func (r *RepoFlights) FindById(ctx context.Context, id string) (domain.Flight, e
 	return domain.Flight{}, nil
 }
 
+// FindByNumber retrieves a flight from the repository by the provided flight number. Returns the flight or an empty object if not found.
 func (r *RepoFlights) FindByNumber(ctx context.Context, number string) (domain.Flight, error) {
+	select {
+	case <-ctx.Done():
+		return domain.Flight{}, ctx.Err()
+	default:
+	}
 	for _, f := range r.data {
 		for _, s := range f.Segments {
 			if strings.Compare(s.FlightNumber, number) == 0 {
@@ -100,7 +117,13 @@ func (r *RepoFlights) FindByNumber(ctx context.Context, number string) (domain.F
 	return domain.Flight{}, nil
 }
 
+// FindByPassenger retrieves all flights that match the specified passenger name from the repository. Returns the flights or an empty collection.
 func (r *RepoFlights) FindByPassenger(ctx context.Context, passengerName string) (domain.Flights, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+	}
 	var flights []domain.Flight
 	for _, f := range r.data {
 		if strings.Compare(f.PassengerName, passengerName) == 0 {
@@ -110,7 +133,13 @@ func (r *RepoFlights) FindByPassenger(ctx context.Context, passengerName string)
 	return flights, nil
 }
 
+// FindByDestination retrieves flights that match the specified departure and arrival locations from the repository.
 func (r *RepoFlights) FindByDestination(ctx context.Context, departure, arrival string) (domain.Flights, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+	}
 	var flights []domain.Flight
 	for _, f := range r.data {
 		for _, seg := range f.Segments {
@@ -123,7 +152,13 @@ func (r *RepoFlights) FindByDestination(ctx context.Context, departure, arrival 
 	return flights, nil
 }
 
+// FindByPrice retrieves all flights whose total price matches the specified amount. Returns the flights or an empty collection.
 func (r *RepoFlights) FindByPrice(ctx context.Context, price float64) (domain.Flights, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+	}
 	var flights []domain.Flight
 	for _, f := range r.data {
 		if f.Total.Amount == price {
