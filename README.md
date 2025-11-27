@@ -290,6 +290,29 @@ All tests live under `server/internal/test/` and use **Testify** (mocks + assert
 ```bash
 go install gotest.tools/gotestsum@latest
 ```
+---
+
+## GitHub Actions (CI)
+
+A GitHub Action workflow has been added to automatically run the project tests on each **push** and **pull request**.
+The workflow uses the `Makefile` target `make test`, ensuring the same test command is used locally and in CI.
+
+The workflow file is located at:
+
+```
+.github/workflows/tests.yml
+```
+
+It installs Go, checks out the repository, and runs:
+
+```bash
+make test
+```
+
+This guarantees that your test suite is always validated before merging new code.
+
+---
+
 
 ---
 
