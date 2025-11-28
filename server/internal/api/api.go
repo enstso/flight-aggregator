@@ -1,4 +1,4 @@
-package db
+package api
 
 import (
 	"context"
@@ -13,8 +13,8 @@ func getClient() *http.Client {
 	return &http.Client{Timeout: 5 * time.Second}
 }
 
-// GetJSON sends an HTTP GET request to the specified URL and returns the response body as a byte slice or an error.
-func GetJSON(ctx context.Context, url string) ([]byte, error) {
+// GetDataFromApi sends an HTTP GET request to the specified URL and returns the response body as a byte slice or an error.
+func GetDataFromApi(ctx context.Context, url string) ([]byte, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("create request: %w", err)

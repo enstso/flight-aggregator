@@ -1,8 +1,8 @@
 package handler
 
 import (
+	"aggregator/internal/api"
 	"aggregator/internal/config"
-	"aggregator/internal/db"
 	"aggregator/internal/domain"
 	"aggregator/internal/repo"
 	"aggregator/internal/service"
@@ -38,9 +38,10 @@ func GetFlights(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "list flights: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+	snapshot := flights.ToSnapshot()
 
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(flights); err != nil {
+	if err := json.NewEncoder(w).Encode(snapshot); err != nil {
 		http.Error(w, "encode response: "+err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -74,8 +75,10 @@ func GetFlightById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	snapshot := flight.Snapshot()
+
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(flight); err != nil {
+	if err := json.NewEncoder(w).Encode(snapshot); err != nil {
 		http.Error(w, "encode response: "+err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -108,8 +111,10 @@ func GetFlightByNumber(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	snapshot := flight.Snapshot()
+
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(flight); err != nil {
+	if err := json.NewEncoder(w).Encode(snapshot); err != nil {
 		http.Error(w, "encode response: "+err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -142,8 +147,10 @@ func GetFlightsByPassenger(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	snapshot := flights.ToSnapshot()
+
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(flights); err != nil {
+	if err := json.NewEncoder(w).Encode(snapshot); err != nil {
 		http.Error(w, "encode response: "+err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -187,8 +194,10 @@ func GetFlightsByDestination(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	snapshot := flights.ToSnapshot()
+
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(flights); err != nil {
+	if err := json.NewEncoder(w).Encode(snapshot); err != nil {
 		http.Error(w, "encode response: "+err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -224,8 +233,10 @@ func GetFlightsByPrice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	snapshot := flights.ToSnapshot()
+
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(flights); err != nil {
+	if err := json.NewEncoder(w).Encode(snapshot); err != nil {
 		http.Error(w, "encode response: "+err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -249,7 +260,7 @@ func GetFlightsSorted(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("[GET] /flights/sorted type=",
+	fmt.Println("[GET] /flights/sorted?type=",
 		sortType, time.Now().Format("2006-01-02 15:04:05"))
 
 	multi := GetMultiRepo(ctx, w)
@@ -276,20 +287,23 @@ func GetFlightsSorted(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "sort flights: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	snapshot := flights.ToSnapshot()
+
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(flights); err != nil {
+	if err := json.NewEncoder(w).Encode(snapshot); err != nil {
 		http.Error(w, "encode response: "+err.Error(), http.StatusInternalServerError)
 	}
 }
 
 func GetMultiRepo(ctx context.Context, w http.ResponseWriter) *repo.Multi {
-	b1, err := db.GetJSON(ctx, config.SERVER1_URL+"flights")
+	b1, err := api.GetDataFromApi(ctx, config.SERVER1_URL+"flights")
 	if err != nil {
 		http.Error(w, "fetch flights: "+err.Error(), http.StatusBadGateway)
 		return nil
 	}
 
-	b2, err := db.GetJSON(ctx, config.SERVER2_URL+"flight_to_book")
+	b2, err := api.GetDataFromApi(ctx, config.SERVER2_URL+"flight_to_book")
 	if err != nil {
 		http.Error(w, "fetch flight_to_book: "+err.Error(), http.StatusBadGateway)
 		return nil
