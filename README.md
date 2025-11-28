@@ -1,4 +1,6 @@
-# Flight Aggregator
+# Flight Aggregator 
+
+Enstso, Jimmy, Prince, Walid
 
 An HTTP API written in Go that **aggregates flights coming from two Node services** (`j-server1` and `j-server2`), normalizes the data, and exposes endpoints to **search** and **sort** flights by **price**, **departure date**, or **total travel time**.
 CORS is enabled for all endpoints.
