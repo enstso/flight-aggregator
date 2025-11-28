@@ -14,46 +14,42 @@ import (
 // createTestFlights generates a set of test flight data with predefined attributes for testing purposes.
 func createTestFlights() domain.Flights {
 	now := time.Now()
-	return domain.Flights{
-		{
-			ID:            "1",
-			Status:        "confirmed",
-			PassengerName: "John Doe",
-			Segments: []domain.Segment{
-				{
-					FlightNumber: "AA100",
-					Departure:    "JFK",
-					Arrival:      "LAX",
-					DepartTime:   now,
-					ArriveTime:   now.Add(5 * time.Hour),
-				},
-			},
-			Total: domain.Total{
-				Amount:   500.00,
-				Currency: "USD",
-			},
-			Source: "source1",
-		},
-		{
-			ID:            "2",
-			Status:        "confirmed",
-			PassengerName: "Jane Smith",
-			Segments: []domain.Segment{
-				{
-					FlightNumber: "UA200",
-					Departure:    "JFK",
-					Arrival:      "SFO",
-					DepartTime:   now,
-					ArriveTime:   now.Add(4 * time.Hour),
-				},
-			},
-			Total: domain.Total{
-				Amount:   300.00,
-				Currency: "USD",
-			},
-			Source: "source2",
-		},
-	}
+
+	seg1 := domain.NewSegment(
+		"AA100",
+		"JFK",
+		"LAX",
+		now,
+		now.Add(5*time.Hour),
+	)
+	total1 := domain.NewTotal(500.00, "USD")
+	f1 := domain.NewFlight(
+		"1",
+		"confirmed",
+		"John Doe",
+		[]domain.Segment{seg1},
+		total1,
+		"source1",
+	)
+
+	seg2 := domain.NewSegment(
+		"UA200",
+		"JFK",
+		"SFO",
+		now,
+		now.Add(4*time.Hour),
+	)
+	total2 := domain.NewTotal(300.00, "USD")
+	f2 := domain.NewFlight(
+		"2",
+		"confirmed",
+		"Jane Smith",
+		[]domain.Segment{seg2},
+		total2,
+		"source2",
+	)
+
+	return domain.Flights{*f1, *f2}
 }
 
 // TestMulti_List validates the behavior of the Multi repository's List function through various test scenarios.
@@ -140,7 +136,7 @@ func TestMulti_FindByID(t *testing.T) {
 		result, err := multi.FindByID(ctx, "1")
 
 		assert.NoError(t, err)
-		assert.Equal(t, "1", result.ID)
+		assert.Equal(t, "1", result.ID())
 
 		repo1.AssertExpectations(t)
 	})
@@ -159,7 +155,7 @@ func TestMulti_FindByID(t *testing.T) {
 		result, err := multi.FindByID(ctx, "2")
 
 		assert.NoError(t, err)
-		assert.Equal(t, "2", result.ID)
+		assert.Equal(t, "2", result.ID())
 
 		repo1.AssertExpectations(t)
 		repo2.AssertExpectations(t)
@@ -215,7 +211,9 @@ func TestMulti_FindByNumber(t *testing.T) {
 		result, err := multi.FindByNumber(ctx, "AA100")
 
 		assert.NoError(t, err)
-		assert.Equal(t, "AA100", result.Segments[0].FlightNumber)
+		segs := result.Segments()
+		assert.Len(t, segs, 1)
+		assert.Equal(t, "AA100", segs[0].FlightNumber())
 
 		repo1.AssertExpectations(t)
 	})
@@ -254,7 +252,7 @@ func TestMulti_FindByPassenger(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Len(t, result, 1)
-		assert.Equal(t, "John Doe", result[0].PassengerName)
+		assert.Equal(t, "John Doe", result[0].PassengerName())
 
 		repo1.AssertExpectations(t)
 		repo2.AssertExpectations(t)
@@ -315,8 +313,11 @@ func TestMulti_FindByDestination(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Len(t, result, 1)
-		assert.Equal(t, "JFK", result[0].Segments[0].Departure)
-		assert.Equal(t, "LAX", result[0].Segments[0].Arrival)
+
+		segs := result[0].Segments()
+		assert.Len(t, segs, 1)
+		assert.Equal(t, "JFK", segs[0].Departure())
+		assert.Equal(t, "LAX", segs[0].Arrival())
 
 		repo1.AssertExpectations(t)
 		repo2.AssertExpectations(t)
@@ -356,7 +357,7 @@ func TestMulti_FindByPrice(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Len(t, result, 1)
-		assert.Equal(t, 500.00, result[0].Total.Amount)
+		assert.Equal(t, 500.00, result[0].Total().Amount())
 
 		repo1.AssertExpectations(t)
 		repo2.AssertExpectations(t)

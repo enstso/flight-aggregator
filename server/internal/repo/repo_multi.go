@@ -17,6 +17,12 @@ func NewMulti(repos ...domain.FlightsRepository) *Multi {
 
 // List retrieves all flights from multiple repositories and returns them as a combined collection or an error.
 func (m *Multi) List(ctx context.Context) (domain.Flights, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+	}
+
 	var all domain.Flights
 	for _, r := range m.repos {
 		items, err := r.List(ctx)
@@ -30,6 +36,12 @@ func (m *Multi) List(ctx context.Context) (domain.Flights, error) {
 
 // FindByID searches for a flight by ID across multiple repositories and returns the flight or an error if not found.
 func (m *Multi) FindByID(ctx context.Context, id string) (domain.Flight, error) {
+	select {
+	case <-ctx.Done():
+		return domain.Flight{}, ctx.Err()
+	default:
+	}
+
 	var lastErr error
 	for _, r := range m.repos {
 		f, err := r.FindById(ctx, id)
@@ -40,7 +52,7 @@ func (m *Multi) FindByID(ctx context.Context, id string) (domain.Flight, error) 
 			}
 			return domain.Flight{}, err
 		}
-		if f.ID == "" {
+		if f.ID() == "" {
 			lastErr = domain.ErrFlightNotFound
 			continue
 		}
@@ -54,6 +66,12 @@ func (m *Multi) FindByID(ctx context.Context, id string) (domain.Flight, error) 
 
 // FindByNumber searches for a flight by its number across multiple repositories and returns the flight or an error if not found.
 func (m *Multi) FindByNumber(ctx context.Context, id string) (domain.Flight, error) {
+	select {
+	case <-ctx.Done():
+		return domain.Flight{}, ctx.Err()
+	default:
+	}
+
 	var lastErr error
 	for _, r := range m.repos {
 		f, err := r.FindByNumber(ctx, id)
@@ -64,7 +82,7 @@ func (m *Multi) FindByNumber(ctx context.Context, id string) (domain.Flight, err
 			}
 			return domain.Flight{}, err
 		}
-		if f.ID == "" {
+		if f.ID() == "" {
 			lastErr = domain.ErrFlightNotFound
 			continue
 		}
@@ -79,6 +97,12 @@ func (m *Multi) FindByNumber(ctx context.Context, id string) (domain.Flight, err
 // FindByPassenger searches for flights associated with a specific passenger name across multiple repositories.
 // Returns a combined collection of flights or an error if none are found.
 func (m *Multi) FindByPassenger(ctx context.Context, passengerName string) (domain.Flights, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+	}
+
 	var flights domain.Flights
 
 	for _, r := range m.repos {
@@ -100,6 +124,12 @@ func (m *Multi) FindByPassenger(ctx context.Context, passengerName string) (doma
 // FindByDestination searches for flights across multiple repositories based on the given departure and arrival locations.
 // It returns a combined collection of flights or an error if no matches are found in any repository.
 func (m *Multi) FindByDestination(ctx context.Context, departure, arrival string) (domain.Flights, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+	}
+
 	var flights domain.Flights
 
 	for _, r := range m.repos {
@@ -121,6 +151,12 @@ func (m *Multi) FindByDestination(ctx context.Context, departure, arrival string
 // FindByPrice retrieves flights matching the specified price across multiple repositories.
 // Returns a combined collection of flights or an error if none are found.
 func (m *Multi) FindByPrice(ctx context.Context, price float64) (domain.Flights, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+	}
+
 	var flights domain.Flights
 
 	for _, r := range m.repos {

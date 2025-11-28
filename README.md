@@ -16,6 +16,8 @@ CORS is enabled for all endpoints.
 * [Testing](#testing)
 * [Development tips](#development-tips)
 * [Troubleshooting & gotchas](#troubleshooting--gotchas)
+* [Why We Use `context.Context` and an HTTP Client Timeout](#why-we-use-contextcontext-and-an-http-client-timeout)
+
 
 ---
 
@@ -30,12 +32,12 @@ CORS is enabled for all endpoints.
           \                          /
            \                        /
             v                      v
-        +----------------------------------+
-        |   Go API :8080 (Flight Aggreg.)  |
-        |  internal/db      -> fetch JSON  |
-        |  internal/repo    -> normalize   |
-        |  internal/service -> sorting     |
-        +----------------------------------+
+        +------------------------------------------+
+        |   Go API :3001 (Flight Aggreg.)          |
+        |  internal/api      -> helper fetch JSON  |
+        |  internal/repo    -> normalize           |
+        |  internal/service -> sorting             |
+        +------------------------------------------+
                          |
                          v
                    HTTP clients
@@ -49,8 +51,8 @@ CORS is enabled for all endpoints.
 server/
   internal/
     config/          # viper-based env loader (SERVER1_URL, SERVER2_URL)
-    db/              # HTTP client helpers (GetJSON)
-    domain/          # core models + repository interface
+    api/              # HTTP client helpers (GetJSON)
+    domain/          # core models (flights& snapshot) + repository interface
     handler/         # HTTP handlers (/flights, /health, …)
     health/          # health check response types + handler
     repo/            # repos reading j-server1 & j-server2 payloads + Multi aggregator
@@ -70,7 +72,7 @@ Makefile             # make test
 ## How it works
 
 * **Config** (`internal/config`): uses **Viper** to read `../.env` (because the Go service builds from `./server`) and sets `SERVER1_URL` and `SERVER2_URL`.
-* **Fetch** (`internal/db`): `GetJSON(ctx, url)` fetches upstream JSON with a 5s timeout.
+* **Fetch** (`internal/api`): `GetDataFromApi(ctx, url)` fetches upstream JSON with a 5s timeout.
 * **Repositories** (`internal/repo`):
 
     * `RepoFlights` parses `j-server1`’s `/flights` list.
@@ -118,7 +120,7 @@ SERVER1_URL=http://localhost:4001/
 SERVER2_URL=http://localhost:4002/
 ```
 
-> The Go server currently listens on **:8080** (see `main.go`).
+> The Go server currently listens on **:3001** (see `main.go`).
 
 
 ---
@@ -136,7 +138,7 @@ Other variables in `.env` configure the Node services and Compose port mappings.
 
 Base URL (hosted by the Go API):
 
-* **Local (default code):** `http://localhost:8080`
+* **Local (default code):** `http://localhost:3001`
 
 ### Health
 
@@ -215,7 +217,7 @@ Base URL (hosted by the Go API):
 **cURL**
 
 ```bash
-curl -X GET "http://localhost:8080/flights/destination" \
+curl -X GET "http://localhost:3001/flights/destination" \
   -H "Content-Type: application/json" \
   -d '{"departure":"CDG","arrival":"HND"}'
 ```
@@ -238,9 +240,9 @@ curl -X GET "http://localhost:8080/flights/destination" \
 **cURL examples**
 
 ```bash
-curl "http://localhost:8080/flights/sorted?type=price"
-curl "http://localhost:8080/flights/sorted?type=time"
-curl "http://localhost:8080/flights/sorted?type=departure"
+curl "http://localhost:3001/flights/sorted?type=price"
+curl "http://localhost:3001/flights/sorted?type=time"
+curl "http://localhost:3001/flights/sorted?type=departure"
 ```
 
 ### Common error codes
@@ -336,6 +338,30 @@ This guarantees that your test suite is always validated before merging new code
     * `SERVER2_URL + "flight_to_book"`
 
 ---
+
+## Why We Use `context.Context` and an HTTP Client Timeout
+
+The aggregator calls external services, so every request must stop cleanly if something goes wrong.
+We use:
+
+### **1. `context.Context`**
+
+Attached to each outgoing HTTP request to ensure it is **automatically cancelled** when:
+
+* the client cancels the request,
+* the handler times out,
+* the server stops processing.
+
+This prevents wasted work and goroutine leaks.
+
+### **2. HTTP Client Timeout**
+
+A fixed timeout (5s) ensures the aggregator **never waits indefinitely** if an external service is slow or unresponsive.
+
+Together, context cancellation + client timeout keep the aggregator fast, safe, and resource-efficient.
+
+---
+
 
 ## License
 

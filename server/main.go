@@ -40,8 +40,8 @@ func main() {
 	mux.HandleFunc("/flights/price/", handler.GetFlightsByPrice)
 	mux.HandleFunc("/flights/sorted", handler.GetFlightsSorted)
 
-	fmt.Println("Server running on :8080")
-	if err := http.ListenAndServe(":8080", withCORS(mux)); err != nil {
+	fmt.Println("Server running on :" + config.SERVER_PORT)
+	if err := http.ListenAndServe(":"+config.SERVER_PORT, withCORS(mux)); err != nil {
 		fmt.Println("Server error:", err)
 	}
 }
