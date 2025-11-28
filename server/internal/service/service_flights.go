@@ -10,14 +10,14 @@ import (
 
 // SortByPrice retrieves a list of flights from repositories and sorts them in ascending order by their total price.
 func SortByPrice(ctx context.Context, r *repo.Multi) (domain.Flights, error) {
-	var sortFlights, err = r.List(ctx)
+	sortFlights, err := r.List(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	sort.Slice(sortFlights, func(i, j int) bool {
-		return sortFlights[i].Total.Amount <
-			sortFlights[j].Total.Amount
+		return sortFlights[i].Total().Amount() <
+			sortFlights[j].Total().Amount()
 	})
 	return sortFlights, nil
 }
@@ -47,10 +47,13 @@ func SortByDepartureDate(ctx context.Context, r *repo.Multi) (domain.Flights, er
 	}
 
 	sort.Slice(flights, func(i, j int) bool {
-		if len(flights[i].Segments) == 0 || len(flights[j].Segments) == 0 {
+		segmentsI := flights[i].Segments()
+		segmentsJ := flights[j].Segments()
+
+		if len(segmentsI) == 0 || len(segmentsJ) == 0 {
 			return false
 		}
-		return flights[i].Segments[0].DepartTime.Before(flights[j].Segments[0].DepartTime)
+		return segmentsI[0].DepartTime().Before(segmentsJ[0].DepartTime())
 	})
 
 	return flights, nil
@@ -59,10 +62,11 @@ func SortByDepartureDate(ctx context.Context, r *repo.Multi) (domain.Flights, er
 // TotalTravelTime calculates the total travel time of a flight by measuring the time difference between the first departure and last arrival.
 // Returns zero if the flight has no segments.
 func TotalTravelTime(f domain.Flight) time.Duration {
-	if len(f.Segments) == 0 {
+	segs := f.Segments()
+	if len(segs) == 0 {
 		return 0
 	}
-	firstDepart := f.Segments[0].DepartTime
-	lastArrive := f.Segments[len(f.Segments)-1].ArriveTime
+	firstDepart := segs[0].DepartTime()
+	lastArrive := segs[len(segs)-1].ArriveTime()
 	return lastArrive.Sub(firstDepart)
 }

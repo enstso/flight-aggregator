@@ -49,18 +49,18 @@ func NewRepoFlightsFromReader(r io.Reader) (*RepoFlights, error) {
 			return nil, fmt.Errorf("repo Flights parse arrival %w", err)
 		}
 
-		seg := domain.Segment{
-			FlightNumber: f.FlightNumber,
-			Departure:    f.DepartureAirport,
-			Arrival:      f.ArrivalAirport,
-			DepartTime:   dep,
-			ArriveTime:   arr,
-		}
+		seg := domain.NewSegment(
+			f.FlightNumber,
+			f.DepartureAirport,
+			f.ArrivalAirport,
+			dep,
+			arr,
+		)
 
-		total := domain.Total{
-			Amount:   f.Price,
-			Currency: f.Currency,
-		}
+		total := domain.NewTotal(
+			f.Price,
+			f.Currency,
+		)
 
 		flight := domain.NewFlight(
 			f.BookingID,
@@ -93,7 +93,7 @@ func (r *RepoFlights) FindById(ctx context.Context, id string) (domain.Flight, e
 	default:
 	}
 	for _, f := range r.data {
-		if strings.Compare(f.ID, id) == 0 {
+		if strings.Compare(f.ID(), id) == 0 {
 			return f, nil
 		}
 	}
@@ -108,8 +108,8 @@ func (r *RepoFlights) FindByNumber(ctx context.Context, number string) (domain.F
 	default:
 	}
 	for _, f := range r.data {
-		for _, s := range f.Segments {
-			if strings.Compare(s.FlightNumber, number) == 0 {
+		for _, s := range f.Segments() {
+			if strings.Compare(s.FlightNumber(), number) == 0 {
 				return f, nil
 			}
 		}
@@ -126,7 +126,7 @@ func (r *RepoFlights) FindByPassenger(ctx context.Context, passengerName string)
 	}
 	var flights []domain.Flight
 	for _, f := range r.data {
-		if strings.Compare(f.PassengerName, passengerName) == 0 {
+		if strings.Compare(f.PassengerName(), passengerName) == 0 {
 			flights = append(flights, f)
 		}
 	}
@@ -142,9 +142,9 @@ func (r *RepoFlights) FindByDestination(ctx context.Context, departure, arrival 
 	}
 	var flights []domain.Flight
 	for _, f := range r.data {
-		for _, seg := range f.Segments {
-			if strings.Compare(seg.Departure, departure) == 0 &&
-				strings.Compare(seg.Arrival, arrival) == 0 {
+		for _, seg := range f.Segments() {
+			if strings.Compare(seg.Departure(), departure) == 0 &&
+				strings.Compare(seg.Arrival(), arrival) == 0 {
 				flights = append(flights, f)
 			}
 		}
@@ -161,7 +161,7 @@ func (r *RepoFlights) FindByPrice(ctx context.Context, price float64) (domain.Fl
 	}
 	var flights []domain.Flight
 	for _, f := range r.data {
-		if f.Total.Amount == price {
+		if f.Total().Amount() == price {
 			flights = append(flights, f)
 		}
 	}
