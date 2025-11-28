@@ -53,7 +53,7 @@ CORS is enabled for all endpoints.
 server/
   internal/
     config/          # viper-based env loader (SERVER1_URL, SERVER2_URL)
-    api/              # HTTP client helpers (GetJSON)
+    api/              # HTTP client helpers (GetDataFromApi)
     domain/          # core models (flights& snapshot) + repository interface
     handler/         # HTTP handlers (/flights, /health, …)
     health/          # health check response types + handler
